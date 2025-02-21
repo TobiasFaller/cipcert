@@ -24,7 +24,7 @@ struct QCir {
 };
 
 QCir to_qcir(const CNF& cnf);
-QCir qprime(QCir self);
+QCir qnext(QCir self);
 QCir qneg(QCir self);
 QCir qand(QCir self, const QCir& other);
 QCir qor(QCir self, const QCir& other);

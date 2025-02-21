@@ -25,8 +25,10 @@ void add_clause(const std::string &first, std::ifstream &file, CNF *cnf) {
   int64_t l = std::stoi(first);
   assert(std::abs(l) <= cnf->n);
   cnf->clauses.push_back({l});
-  while (file >> l && l)
+  while (file >> l && l) {
+    assert(std::abs(l) <= cnf->n);
     cnf->clauses.back().push_back(l);
+  }
 }
 
 CNF new_section(std::ifstream &file) {
