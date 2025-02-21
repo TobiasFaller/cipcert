@@ -6,7 +6,7 @@ i cnf 2 2
 u cnf 2 0
 g cnf 2 1
 2 0
-t cnf 2 4
+t cnf 4 4
 -1 3 0
 1 -3 0
 -1 4 0
