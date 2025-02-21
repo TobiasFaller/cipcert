@@ -95,7 +95,6 @@ std::vector<std::pair<int64_t, int64_t>> index_consecutively(Dimspec &witness,
           l = model_map[std::abs(l) - 1] * ((l < 0) ? -1 : 1);
         }
     }
-    model.transition.n = 2 * new_size;
   }
   // If we are re-mapping with a user-provided mapping then the wittness size changes.
   // => We need to re-map the witness next variables.
@@ -110,7 +109,6 @@ std::vector<std::pair<int64_t, int64_t>> index_consecutively(Dimspec &witness,
             l += witness_next_shift * ((l < 0) ? -1 : 1);
           }
     }
-    witness.transition.n = 2 * new_size;
   }
   return shared;
 }
@@ -212,7 +210,7 @@ void step(const char *path, const Dimspec &witness) {
             qnext(to_qcir(witness.universal)))), // u1'
         qneg(qnext(to_qcir(witness.goal)))       // -g1'
       ))};
-  // expect exists(s') !(-g0 ^ t' ^ u0' => -g1') = UNSAT
+  // expect exists(s') !(-g0 ^ t' ^ u0' ^ u1' => -g1') = UNSAT
   std::fill(std::begin(check.vars), std::end(check.vars), QVarType::Exists);
   std::ofstream os { path };
   os << check;

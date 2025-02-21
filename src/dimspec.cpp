@@ -23,6 +23,10 @@ void Dimspec::try_parse_simulation(std::ifstream &file) {
 void add_clause(const std::string &first, std::ifstream &file, CNF *cnf) {
   assert(cnf);
   int64_t l = std::stoi(first);
+  if (!l) {
+    cnf->clauses.push_back({});
+    return;
+  }
   assert(std::abs(l) <= (cnf->has_next ? cnf->n * 2 : cnf->n));
   cnf->clauses.push_back({l});
   while (file >> l && l) {
