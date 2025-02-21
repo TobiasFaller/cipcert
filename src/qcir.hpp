@@ -22,4 +22,13 @@ struct QCir {
     std::vector<QGate> gates;
     QRef output;
 };
+
+QCir to_qcir(const CNF& cnf);
+QCir qprime(QCir self);
+QCir qneg(QCir self);
+QCir qand(QCir self, const QCir& other);
+QCir qor(QCir self, const QCir& other);
+QCir qimply(QCir self, const QCir& other);
+
 std::ostream &operator<<(std::ostream &os, const QCir &cir);
+

@@ -2,10 +2,12 @@
 
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <ranges>
 #include <vector>
 
 #include "dimspec.hpp"
+#include "qcir.hpp"
 
 #ifdef QUIET
 #define MSG \
@@ -54,94 +56,107 @@ std::vector<std::pair<int64_t, int64_t>> index_consecutively(Dimspec &witness,
 
 void reset(const char *path, const Dimspec &witness, const Dimspec &model,
            const std::vector<std::pair<int64_t, int64_t>> &shared) {
-// Encoding reset(path, witness, model);
-// std::vector<int64_t> m_reset, w_reset;
-// m_reset.reserve(shared.size());
-// w_reset.reserve(shared.size());
-// for (auto &[w, m] : shared) {
-//   if (w.init) w_reset.push_back(beq(w.id, w.init));
-//   if (m.init) m_reset.push_back(beq(m.id, m.init));
-// }
-// bbad(band(                             // R{K} ^ C ^ !(R'{K} ^ C')
-//     band(m_reset),                     // R{K}
-//     band(model.constraints),           // C
-//     bnot(band(                         //
-//         band(w_reset),                 // R'{K}
-//         band(witness.constraints))))); // C'
+  QCir check {
+    qneg(                                     // !(i ^ u => i' ^ u')
+      qimply(                                 // i ^ u => i' ^ u'
+        qand(                                 // i ^ u
+          to_qcir(model.initial),             // i
+          to_qcir(model.universal)),          // u
+        qand(                                 // i' ^ u'
+          to_qcir(witness.initial),           // i'
+          to_qcir(witness.universal))         // u'
+      ))};
+  // exists(s) forall(s'\\s): !(i ^ u => i' ^ u')
+  std::fill(std::begin(check.vars), std::end(check.vars), QVarType::ForAll);
+  for (auto& [model, witness] : shared)
+    check.vars[witness - 1] = QVarType::Exists;
+  std::ofstream os { path };
+  os << check;
 }
 
-// void transition(const char *path, const Dimspec &witness, const Dimspec
-// &model,
-//                 const std::vector<std::pair<int64_t, int64_t>>
-//                 &shared) {
-// Encoding transition(path, witness, model);
-// unroll(witness);
-// unroll(model);
-// std::vector<int64_t> m_transition, w_transition;
-// m_transition.reserve(shared.size());
-// w_transition.reserve(shared.size());
-// for (auto &[w, m] : shared) {
-//   if (w.next) w_transition.push_back(beq(next(w.id), w.next));
-//   if (m.next) m_transition.push_back(beq(next(m.id), m.next));
-// }
-// bbad(band(                         // F{K} ^ C0 ^ C1 ^ C0' ^ !(F'{K} ^ C1')
-//     band(m_transition),            // F{K}
-//     band(model.constraints),       // C0
-//     band(next(model.constraints)), // C1
-//     band(witness.constraints),     // C0'
-//     bnot(band(                     //
-//         band(w_transition),        // F'{K}
-//         band(next(witness.constraints)))))); // C1'
-// }
+void transition(const char *path, const Dimspec &witness, const Dimspec &model,
+           const std::vector<std::pair<int64_t, int64_t>> &shared) {
+  QCir check {
+    qneg(                                     // !(t ^ u0 ^ u1 ^ u' => t' ^ u1')
+      qimply(                                 // t ^ u0 ^ u1 ^ u' => t' ^ u1'
+        qand(                                 // t ^ u0 ^ u1 ^ u'
+          qand(                               // t ^ u0
+            to_qcir(model.transition),        // t
+            to_qcir(model.universal)),        // u0
+          qand(                               // u1 ^ u'
+            qprime(to_qcir(model.universal)), // u1
+            to_qcir(witness.universal))),     // u'
+        qand(                                 // t' ^ u1'
+          to_qcir(witness.transition),        // t'
+          qprime(to_qcir(witness.universal))) // u1'
+      ))};
+  // exists(s) forall(s'\\s): !(t ^ u0 ^ u1 ^ u' => t' ^ u1')
+  std::fill(std::begin(check.vars), std::end(check.vars), QVarType::ForAll);
+  for (auto& [model, witness] : shared)
+    check.vars[witness - 1] = QVarType::Exists;
+  std::ofstream os { path };
+  os << check;
+}
 
-// void property(const char *path, const Dimspec &witness, const Dimspec &model,
-//               const std::vector<std::pair<int64_t, int64_t>> &shared)
-//               {
-// Encoding property(path, witness, model);
-// bbad(band(                     // !P ^ C ^ C' ^ P'
-//     bor(model.bads),           // !P
-//     band(model.constraints),   // C
-//     band(witness.constraints), // C'
-//     bnot(bor(witness.bads)))); // P'
-// }
+void property(const char *path, const Dimspec &witness, const Dimspec &model,
+           const std::vector<std::pair<int64_t, int64_t>> &shared) {
+  QCir check {
+    qneg(                                     // !(u ^ u' => (-g => -g'))
+      qimply(                                 // u ^ u' => (-g => -g')
+        qand(                                 // u ^ u'
+          to_qcir(model.universal),           // u
+          to_qcir(witness.universal)),        // u'
+        qimply(                               // -g => -g'
+          qneg(to_qcir(model.goal)),          // -g
+          qneg(to_qcir(witness.goal)))        // -g'
+      ))};
+  // exists(s) forall(s'\\s): !(u ^ u' => (-g => -g'))
+  std::fill(std::begin(check.vars), std::end(check.vars), QVarType::ForAll);
+  for (auto& [model, witness] : shared)
+    check.vars[witness - 1] = QVarType::Exists;
+  std::ofstream os { path };
+  os << check;
+}
 
-// void base(const char *path, const Dimspec &witness) {
-// Encoding base(path, witness);
-// std::vector<int64_t> reset;
-// reset.reserve(witness.num_states);
-// for (const auto &[s, i] : witness | inits)
-//   reset.push_back(beq(s, i));
-// bbad(band(                     // R' ^ C' ^ !P'
-//     band(reset),               // R'
-//     band(witness.constraints), // C'
-//     bor(witness.bads)));       // !P'
-// }
+void base(const char *path, const Dimspec &witness) {
+  QCir check {
+    qneg(                                     // !(i' ^ u' => -g')
+      qimply(                                 // i' ^ u' => -g'
+        qand(                                 // i' ^ u'
+          to_qcir(witness.initial),           // i'
+          to_qcir(witness.universal)),        // u'
+        qneg(to_qcir(witness.goal))           // -g'
+      ))};
+  // exists(s'): !(i' ^ u' => -g')
+  std::ofstream os { path };
+  os << check;
+}
 
-// void step(const char *path, const Dimspec &witness) {
-// Encoding step(path, witness);
-// unroll(witness);
-// std::vector<int64_t> transition;
-// transition.reserve(witness.num_states);
-// for (const auto &[s, n] : witness | nexts)
-//   transition.push_back(beq(next(s), n));
-// bbad(band(                           // P0' ^ F' ^ C0' ^ C1' ^ !P1'
-//     bnot(bor(witness.bads)),         // P0'
-//     band(transition),                // F'
-//     band(witness.constraints),       // C0'
-//     band(next(witness.constraints)), // C1'
-//     bor(next(witness.bads))));       // !P1'
-// }
+void step(const char *path, const Dimspec &witness) {
+  QCir check {
+    qneg(                                     // !(-g0 ^ t' ^ u0' => -g1')
+      qimply(                                 // -g0 ^ t' ^ u0' => -g1'
+        qand(                                 // -g0 ^ t' ^ u0'
+          qneg(to_qcir(witness.goal)),        // -g0
+          qand(                               // t' ^ u0'
+            to_qcir(witness.transition),      // t'
+            to_qcir(witness.universal))),     // u0'
+        qneg(qprime(to_qcir(witness.goal)))   // -g1'
+      ))};
+  // exists(s'): !(-g0 ^ t' ^ u0' => -g1')
+  std::ofstream os { path };
+  os << check;
+}
 
 int main(int argc, char **argv) {
   auto [model_path, witness_path, checks] = param(argc, argv);
   MSG << "Certify Model Checking Witnesses in Dimspec\n";
   MSG << VERSION " " GITID "\n";
   Dimspec model(model_path), witness(witness_path);
-  std::cout << witness;
-  index_consecutively(witness, model);
-  reset(checks[0], witnesses, model, shared);
-  // transition(checks[1], witnesses, model, shared);
-  // property(checks[2], witnesses, model, shared);
-  // base(checks[3], witnesses);
-  // step(checks[4], witnesses);
+  auto shared { index_consecutively(witness, model) };
+  reset(checks[0], witness, model, shared);
+  transition(checks[1], witness, model, shared);
+  property(checks[2], witness, model, shared);
+  base(checks[3], witness);
+  step(checks[4], witness);
 }
