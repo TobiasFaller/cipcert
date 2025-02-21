@@ -23,21 +23,21 @@ void Dimspec::try_parse_simulation(std::ifstream &file) {
 void add_clause(const std::string &first, std::ifstream &file, CNF *cnf) {
   assert(cnf);
   int64_t l = std::stoi(first);
-  assert(std::abs(l) <= cnf->n);
+  assert(std::abs(l) <= (cnf->has_next ? cnf->n * 2 : cnf->n));
   cnf->clauses.push_back({l});
   while (file >> l && l) {
-    assert(std::abs(l) <= cnf->n);
+    assert(std::abs(l) <= (cnf->has_next ? cnf->n * 2 : cnf->n));
     cnf->clauses.back().push_back(l);
   }
 }
 
-CNF new_section(std::ifstream &file) {
+CNF new_section(std::ifstream &file, bool has_next = false) {
   std::string s;
   file >> s;
   assert(s == "cnf");
   int64_t n, m;
   file >> n >> m;
-  return CNF(n, m);
+  return CNF(has_next ? (n / 2) : n, m, has_next);
 }
 
 Dimspec::Dimspec(const char *path) {
@@ -50,7 +50,7 @@ Dimspec::Dimspec(const char *path) {
     case 'i': current = &(initial = new_section(file)); break;
     case 'u': current = &(universal = new_section(file)); break;
     case 'g': current = &(goal = new_section(file)); break;
-    case 't': current = &(transition = new_section(file)); break;
+    case 't': current = &(transition = new_section(file, true)); break;
     default: add_clause(s, file, current); break;
     }
 }
@@ -59,7 +59,7 @@ int64_t Dimspec::size() const {
   const int64_t n = initial.n;
   assert(n == universal.n);
   assert(n == goal.n);
-  assert(n == transition.n / 2);
+  assert(n == transition.n);
   return n;
 }
 

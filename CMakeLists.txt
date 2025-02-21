@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 option(TOOLS "Build additional tools (kissat, scripts)" OFF)
 option(STATIC "Build static binary" OFF)
+option(ASAN "Build with address sanitizer" OFF)
 
 add_executable(dimcert ${sources})
 target_compile_options(dimcert PRIVATE -DGITID="${GIT_ID}")
@@ -21,6 +22,11 @@ endif()
 if(STATIC)
   set(BUILD_SHARED_LIBS OFF)
   set_target_properties(dimcert PROPERTIES LINK_FLAGS "-static")
+endif()
+
+if(ASAN)
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
 endif()
 
 add_custom_target(run DEPENDS dimcert COMMAND ./bin/dimcert ../examples/model.dimspec

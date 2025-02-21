@@ -9,10 +9,6 @@ static std::string to_string(const QGateType &gate_type);
 static std::string to_string(const QRef &ref, ssize_t gate_shift);
 static std::string to_string(const QGate &gate, ssize_t gate_shift);
 
-QCir to_qcir(const CNF& cnf) {
-  return QCir(cnf);
-}
-
 QCir::QCir(const CNF& cnf):
     vars(2 * cnf.n, QVarType::Exists),
     gates(cnf.m + 1, QGate { { }, QGateType::Or }),
@@ -30,10 +26,12 @@ QCir::QCir(const CNF& cnf):
   output.id = static_cast<ssize_t>(gates.size());
 }
 
+QCir to_qcir(const CNF& cnf) {
+  return QCir(cnf);
+}
+
 QCir qnext(QCir self) {
-  ssize_t shift { static_cast<ssize_t>(self.vars.size()) };
-  self.vars.reserve(2 * self.vars.size());
-  std::copy(std::begin(self.vars), std::end(self.vars), std::back_inserter(self.vars));
+  const auto shift { static_cast<ssize_t>(self.vars.size() / 2) };
   for (auto& gate : self.gates)
     for (auto& ref : gate.refs)
       ref = shift_ref(ref, (ref.type == QRefType::Var) ? shift : 0);
@@ -61,8 +59,9 @@ QCir qor(QCir self, const QCir& other) {
 }
 
 QCir qimply(QCir self, const QCir& other) {
+  auto other_output { merge_cir(self, other) };
   self.output.id = -self.output.id;
-  self.gates.push_back(QGate { { self.output, merge_cir(self, other) }, QGateType::Or });
+  self.gates.push_back(QGate { { self.output, other_output }, QGateType::Or });
   self.output = { static_cast<ssize_t>(self.gates.size()), QRefType::Gate };
   return self;
 }
@@ -72,11 +71,7 @@ static QRef shift_ref(const QRef& ref, ssize_t shift) {
 }
 
 static QRef merge_cir(QCir& left, const QCir& right) {
-  if (left.vars.size() < right.vars.size())
-    std::copy(std::begin(right.vars) + left.vars.size(), std::end(right.vars),
-      std::back_inserter(left.vars));
-
-  ssize_t shift { static_cast<ssize_t>(left.gates.size()) };
+  const auto shift { static_cast<ssize_t>(left.gates.size()) };
   for (auto const& gate : right.gates) {
     std::vector<QRef> new_refs;
     new_refs.reserve(gate.refs.size());
