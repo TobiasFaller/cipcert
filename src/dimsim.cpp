@@ -28,29 +28,39 @@ auto param(int argc, char *argv[]) {
   return std::tuple{argv[1], argv[2]};
 }
 
-bool check_clause(const std::vector<int64_t> &clause, const std::vector<int64_t>& values) {
-  for (auto const &lit : clause)
-    if (std::binary_search(values.begin(), values.end(), lit))
-      return true;
-  return false;
-}
-
-bool check_clauses(const CNF &cnf, const std::vector<int64_t>& values) {
-  for (auto const &clause : cnf.clauses)
-    if (!check_clause(clause, values))
-      return false;
+bool check_clauses(const CNF &cnf, const std::vector<int64_t>& current, const std::vector<int64_t>& next = {}) {
+for (auto const &clause : cnf.clauses) {
+    for (auto const &lit : clause)
+      if (std::abs(lit) <= cnf.n) {
+        if (std::binary_search(current.begin(), current.end(), lit))
+          goto next_clause;
+      } else {
+        if (std::binary_search(next.begin(), next.end(), lit - ((lit < 0) ? -cnf.n : cnf.n)))
+          goto next_clause;
+      }
+    return false;
+  next_clause:
+    continue;
+  }
   return true;
 }
 
 int check_trace(const Dimspec& model, const Dimtrace& trace) {
-  if (trace.timeframes.size() < 1) { return 1; }
-  if (!check_clauses(model.initial, trace.timeframes[0])) return 2;
-  for (size_t index { 0u }; index < trace.timeframes.size(); ++index) {
-    if (!check_clauses(model.universal, trace.timeframes[index]))
-      if (index == 0u) return 3; else continue;
-    if (check_clauses(model.goal, trace.timeframes[index])) return 0;
+  auto const &timeframes { trace.timeframes };
+  if (timeframes.size() < 1)
+    return 1; // No timeframes
+  if (!check_clauses(model.initial, timeframes[0]))
+    return 2; // INIT UNSAT
+  for (size_t i { 0u }; i < timeframes.size(); ++i) {
+    if (!check_clauses(model.universal, timeframes[i]))
+      return 3; // UNIVERSAL UNSAT
+    if (check_clauses(model.goal, timeframes[i]))
+      return 0; // GOAL SAT
+    if (i + 1 < timeframes.size()
+        && !check_clauses(model.transition, timeframes[i], timeframes[i + 1]))
+      return 4; // TRANS UNSAT
   }
-  return 4;
+  return 5; // No SAT found
 }
 
 int main(int argc, char **argv) {

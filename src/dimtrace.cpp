@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const Dimtrace &trace) {
         os << "v" << index;
         for (auto& value : trace.timeframes[index])
             os << " " << value;
-        os << " 0";
+        os << " 0\n";
     }
     return os;
 }

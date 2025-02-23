@@ -6,3 +6,6 @@ smoketest:
 	@printf "Property   (E(s) A(s'\\\\s) -(u ^ u' => (-g => -g')))        "; ../build/quabs/quabs "examples/3_property.cir"; true
 	@printf "Base       (E(s') -(i' ^ u' => -g'))                      "; ../build/quabs/quabs "examples/4_base.cir"; true
 	@printf "Step       (E(s') -(-g0' ^ t' ^ u0' ^ u1' => -g1'))       "; ../build/quabs/quabs "examples/5_step.cir"; true
+
+	@./build/bin/dimsim examples/model3.dimspec examples/witness3.dimtrace; result=$$?; \
+		printf "Simulation "; if [ "$$result" = "0" ]; then echo "OKAY"; else echo "FAIL $$result"; fi; true
