@@ -1,5 +1,6 @@
 #include "qcir.hpp"
 
+#include <algorithm>
 #include <numeric>
 
 static QRef shift_ref(const QRef& ref, ssize_t shift);

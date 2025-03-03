@@ -1,5 +1,6 @@
 #include "dimtrace.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <sstream>
