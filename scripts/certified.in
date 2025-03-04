@@ -24,7 +24,7 @@ if [[ $# -ge 3 && $3 != -* ]]; then
     shift
 fi
 shift 2
-$limit $mc "$model" "$witness" "$@"
+$limit $mc "$model" "$witness" "$witness" "$@"
 res=$?
 echo $(basename "$0"): model checker exit code $res
 [ $res -eq 124 ] && echo $(basename "$0"): model checker timeout && exit 0

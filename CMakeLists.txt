@@ -3,9 +3,8 @@ project(dimcert VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 23)
 file(GLOB headers CONFIGURE_DEPENDS src/*.hpp)
 file(GLOB sources CONFIGURE_DEPENDS src/*.cpp)
-list(REMOVE_ITEM sources
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/dimsim.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/dimcert.cpp)
+list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/src/dimsim.cpp
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/dimcert.cpp)
 include(util.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -25,7 +24,14 @@ if(TOOLS)
   include(dep/kissat/kissat_bin.cmake)
   include(dep/quabs/quabs_bin.cmake)
   include(dep/dimfuzz/dimfuzz_bin.cmake)
-  add_scripts(check_unsafe check_safe check certified)
+  add_scripts(
+    check_unsafe
+    check_safe
+    check
+    certified
+    random
+    fuzz
+    fuzzer)
 endif()
 
 if(STATIC)
@@ -40,7 +46,7 @@ if(ASAN)
 endif()
 
 add_custom_target(dimcert_run DEPENDS dimcert COMMAND ./bin/dimcert ../examples/model.dimspec
-                                              ../examples/witness.dimspec)
+                                                      ../examples/witness.dimspec)
 
 add_custom_target(smoketest DEPENDS dimcert COMMAND ./bin/check ../examples/model.dimspec
-                                              ../examples/witness.dimspec)
+                                                    ../examples/witness.dimspec)
