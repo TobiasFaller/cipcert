@@ -73,7 +73,7 @@ docker run --rm dimcert examples/model.dimspec examples/witness.dimspec
 #+end_src
 ** Scripts
 In addition to dimcert the TOOLS option builds a number of useful scripts in the build/bin directory:
-- check <model> <witness> :: checks the first line of the witness to decide if it is a Btor2 model to certify safety or a Btor2 trace to certify unsafety. Then runs dimcert and bitwuzla or btorsim respectively.
-- generate [seed] :: Produces a random Btor2 model. Ensures that it is compatible with the current version of dimspecsim.
-- certified <model checker> <model> :: Runs the model checker and checks the produced certificate. The model checker is expected to take the first argument as the model path and write a (sat or unsat) certificate the the path provided in the second argument.
-- fuzzer <model checker> [threads] :: Executes the model checker on random Btor2 models in multiple threads and checks the produced certificates. Error inducing models are collected in build/bugs.
+- check <model> <witness> :: checks the first line of the witness to decide if it is a violation or correctness witness then runs ~check_unsafe~ or ~check_safe~ accordingly.
+- certified <model checker> <model> :: Runs the model checker and verifies the generated certificate. The model checker is expected to interprets the first argument as the path to the model, the second as the path where a violation is written, and the third as the path where a witness circuit is written.
+  Note that the second and third arguments may point to the same file.
+- fuzzer <model checker> [threads] :: Executes the model checker on random models in multiple threads and checks the produced certificates. Error inducing models are collected in build/bugs.
