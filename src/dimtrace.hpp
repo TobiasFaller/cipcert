@@ -5,7 +5,7 @@
 #include <vector>
 
 struct Dimtrace {
-    Dimtrace(char* path);
-    std::vector<std::vector<int64_t>> timeframes;
+  Dimtrace(char *path);
+  std::vector<std::vector<int64_t>> timeframes;
 };
-std::ostream& operator<<(std::ostream& os, const Dimtrace &trace);
+std::ostream &operator<<(std::ostream &os, const Dimtrace &trace);

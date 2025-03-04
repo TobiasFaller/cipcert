@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(dimcert VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 23)
 file(GLOB headers CONFIGURE_DEPENDS src/*.hpp)
@@ -9,7 +9,7 @@ list(REMOVE_ITEM sources
 include(util.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-option(TOOLS "Build additional tools (kissat, scripts)" OFF)
+option(TOOLS "Build additional tools (kissat, scripts)" ON)
 option(STATIC "Build static binary" OFF)
 option(ASAN "Build with address sanitizer" OFF)
 
@@ -23,6 +23,8 @@ target_compile_options(dimsim PRIVATE -DVERSION="${PROJECT_VERSION}")
 
 if(TOOLS)
   include(dep/kissat/kissat_bin.cmake)
+  include(dep/quabs/quabs_bin.cmake)
+  include(dep/dimfuzz/dimfuzz_bin.cmake)
   add_scripts(check_unsafe check_safe check certified)
 endif()
 
