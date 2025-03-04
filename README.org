@@ -31,25 +31,27 @@ that that the states of the "1" copy are equal to the nexts of the "0" copy. Whe
 If a witness and model pass the first three checks, the witness is said to simulate the model.
 The last two check the inductiveness of the property in the witness circuit.
 
-The validity of these formulas is checked by encoding their negation into combinatorial Btor2, and checking unsatisfiability with [[https://github.com/bitwuzla/bitwuzla.git][Bitwuzla]].
-** Witness Format
-Witness circuits are normal Btor2 files.
+The validity of these formulas is checked by encoding their negation into QCIR circuits, and checking unsatisfiability with [[https://github.com/ltentrup/quabs][QuAbs]].
+** Correctness Witness
+Witness circuits are normal DIMSPEC files.
 
 Both the Reset and Transition checks are defined on the intersection between model and witness $K$.
-Requiring the witness circuit to keep the same ids for $K$ would lead to gaps or limit the witness circuits that can be constructed.
-Instead, the witness can store an explicit mapping of its inputs and latches to the simulated  in the model in its symbol table.
-Other information may be stored, but for elements of $K$ the /name/ must start with '=' followed by the simulated literal in the model.
+The witness can store an explicit mapping of its inputs and latches to the simulated  in the model in comments.
+Other information may be stored, but comments containing '=' will be interpreted as a mapping.
 #+begin_example
-1 sort bitvec 1
-2 zero 1
-3 state 1 =8
-4 init 1 3 2
-5 next 1 3 3
-6 bad 3
+c 1=1
+c 2=2
 #+end_example
-If no mapping information is found, Dimcert assumes that
-the first $n$ inputs in the model are simulated by the first $n$ inputs in the witness, and the first $m$ states by the first $m$ states in the model.
+If no mapping information is found, Dimcert assumes a default.
 Checkout the [[https://github.com/Froleyks/dimcert/blob/main/examples][examples]] directory.
+** Violation Witness
+This repository also includes ~dimsim~, a tool for simulating counterexample traces.
+Traces are represented as a sequence of models and have to start with ~s SATISFIABLE~ in the first line.
+#+begin_example
+s SATISFIABLE
+v0 -1 2 0
+v1 -1 -2 0
+#+end_example
 ** References
 The theory this tool is based on is detailed in our papers.
 Beyond that, we demonstrate how to certify the combination of different preprocessing techniques and model checking algorithms with witness circuits.
@@ -58,8 +60,8 @@ Beyond that, we demonstrate how to certify the combination of different preproce
 | Towards Compositional Hardware Model Checking Certification | Yu, Froleyks & Biere et al. | FMCAD23 |
 | Certifying Phase Abstraction                                | Froleyks, Yu & Biere et al. | IJCAR24 |
 ** Build
-Dimcert itself depends on make, cmake, a c++ compiler, and git to fetch the dimspectools dependency.
-With cmake -DTOOLS=ON additional tools are build, namely fuzzdimspec and the bitvector SMT solver bitwuzla. The latter brings the additional dependencies of meson and m4.
+Dimcert itself depends on make, cmake, a c++ compiler, and git to fetch dependency.
+With cmake -DTOOLS=ON additional tools are build, namely dimfuzz and the QBF solver QuAbs. The latter may come with additional dependencies.
 
 A static dimcert binary can be build with cmake -DSTATIC=ON.
 

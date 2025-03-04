@@ -2,7 +2,7 @@ FROM ubuntu:24.04
 
 RUN \
   apt-get update && \
-  apt-get install -y --no-install-recommends cmake make g++ git meson m4 ca-certificates && \
+  apt-get install -y --no-install-recommends cmake make g++ git zlib1g-dev ca-certificates && \
   apt-get clean
 
 COPY . /dimcert

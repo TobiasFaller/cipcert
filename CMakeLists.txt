@@ -21,7 +21,7 @@ target_compile_options(dimsim PRIVATE -DGITID="${GIT_ID}")
 target_compile_options(dimsim PRIVATE -DVERSION="${PROJECT_VERSION}")
 
 if(TOOLS)
-  include(dep/kissat/kissat_bin.cmake)
+  # include(dep/kissat/kissat_bin.cmake)
   include(dep/quabs/quabs_bin.cmake)
   include(dep/dimfuzz/dimfuzz_bin.cmake)
   add_scripts(
