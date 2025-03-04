@@ -1,21 +1,17 @@
 #!/usr/bin/env bash
 bin=$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-btorsim="$bin/btorsim"
-for i in btorsim; do
+dimsim="$bin/dimsim"
+for i in dimsim; do
     [ ! -x "${!i}" ] && echo "$(basename "$0"): missing executable $i (${!i})" >&2 && exit 1
 done
 [ $# -lt 2 ] && echo "usage: $(basename "$0") <model> <unsafe witness>" && exit 0
 echo $(basename "$0"): model   "$1"
 echo $(basename "$0"): witness "$2"
 
-if "$btorsim" -c "$1" "$2" 2> /dev/null; then
+if "$dimsim" -c "$1" "$2" 2> /dev/null; then
     echo $(basename "$0"): Trace simulation passed
     exit 0
 else
-    if "$btorsim" -c "$1" "$2" 2>&1 | grep -q unsupported; then
-        echo $(basename "$0"): Giving up: Unsupported operator in trace
-        exit 0
-    fi
     echo $(basename "$0"): Error invalid trace
     exit 1
 fi

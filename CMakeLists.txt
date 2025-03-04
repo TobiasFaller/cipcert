@@ -41,3 +41,6 @@ endif()
 
 add_custom_target(dimcert_run DEPENDS dimcert COMMAND ./bin/dimcert ../examples/model.dimspec
                                               ../examples/witness.dimspec)
+
+add_custom_target(smoketest DEPENDS dimcert COMMAND ./bin/check ../examples/model.dimspec
+                                              ../examples/witness.dimspec)

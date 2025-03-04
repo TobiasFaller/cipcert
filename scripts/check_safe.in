@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
 bin=$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-cerbotor="$bin/cerbotor"
-bitwuzla="$bin/bitwuzla"
-for i in cerbotor bitwuzla; do
+dimcert="$bin/dimcert"
+quabs="$bin/quabs"
+for i in dimcert quabs; do
     [ ! -x "${!i}" ] && echo "$(basename "$0"): missing executable $i (${!i})" >&2 && exit 1
 done
 [ $# -lt 2 ] && echo "usage: $(basename "$0") <model> <safe witness>" && exit 0
-mkdir -p ${TMPDIR:-/tmp}/froleyks-cerbotor
+mkdir -p ${TMPDIR:-/tmp}/froleyks-dimcert
 if [ $# -gt 2 ]; then
     TMP=$(realpath "$bin"/..)
 else
-    TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-cerbotor/$(basename "$0")-XXXXXXXX)
+    TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-dimcert/$(basename "$0")-XXXXXXXX)
     trap 'rm -rf ${TMP}; exit' EXIT HUP INT QUIT TERM
 fi
 echo $(basename "$0"): using temp dir "$TMP"
 CHECKS=(reset transition property base step)
-btors=()
+circuits=()
 for check in "${CHECKS[@]}"; do
-    btors+=("${TMP}/$check.btor2")
+    circuits+=("${TMP}/$check.cir")
 done
 echo $(basename "$0"): model   "$1"
 echo $(basename "$0"): witness "$2"
-"$cerbotor" "$1" "$2" "${btors[@]}" || {
-    echo "$(basename "$0"): Error: cerbotor failed" >&2
+"$dimcert" "$1" "$2" "${circuits[@]}" || {
+    echo "$(basename "$0"): Error: dimcert failed" >&2
     exit 1
 }
 
 ALL_SUCCESS=true
 for check in "${CHECKS[@]}"; do
     echo Checking $check
-    r=$($bitwuzla "${TMP}/$check.btor2")
-    if [[ ! "$r" =~ Bad\ property\ .*unsatisfiable\. ]]; then
+    r=$($quabs "${TMP}/$check.cir")
+    if [[ ! "$r" =~ r\ UNSAT ]]; then
         ALL_SUCCESS=false
         echo $(basename "$0"): "Error: $check check failed" "$r"
     fi
