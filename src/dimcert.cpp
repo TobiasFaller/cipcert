@@ -163,16 +163,16 @@ void property(const char *path, const Dimspec &witness, const Dimspec &model,
            const std::vector<std::pair<int64_t, int64_t>> &shared) {
   // check that forall(s) u ^ u' => exist(s'\s) (-g => -g')
   QCir check {
-    qneg(                                        // !(u ^ u' => (-g => -g'))
-      qimply(                                    // u ^ u' => (-g => -g')
+    qneg(                                        // !(u ^ u' => (g => g'))
+      qimply(                                    // u ^ u' => (g => g')
         qand(                                    // u ^ u'
           to_qcir(model.universal),              // u
           to_qcir(witness.universal)),           // u'
-        qimply(                                  // -g => -g'
-          qneg(to_qcir(model.goal)),             // -g
-          qneg(to_qcir(witness.goal)))           // -g'
+        qimply(                                  // g => g'
+          to_qcir(model.goal),                   // g
+          to_qcir(witness.goal))                 // g'
       ))};
-  // expect exists(s) forall(s'\s) !(u ^ u' => (-g => -g')) = UNSAT
+  // expect exists(s) forall(s'\s) !(u ^ u' => (g => g')) = UNSAT
   std::fill(std::begin(check.vars), std::end(check.vars), QVarType::ForAll);
   for (auto& [model, witness] : shared)
     check.vars[witness - 1] = QVarType::Exists;
