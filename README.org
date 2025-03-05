@@ -22,7 +22,7 @@ Instead of searching for an inductive invariant in the model itself, we find a d
 To check if a witness circuit is valid for a given model, Dimcert performs five checks:
 | Reset      | i \wedge u  \Rightarrow  i' \wedge u'              |
 | Transition | t \wedge u0 \wedge u1 \wedge u0'  \Rightarrow  t' \wedge u1' |
-| Property   | (u \wedge u')  \Rightarrow  (-g \Rightarrow -g')        |
+| Property   | (u \wedge u')  \Rightarrow  (g \Rightarrow g')          |
 | Base       | i' \wedge u'  \Rightarrow  -g'                |
 | Step       | -g0' \wedge t' \wedge u0' \wedge u1'  \Rightarrow  -g1' |
 Where $i$ encodes initial states, $u$ is the universal constraint, $g$ is the goal, and $t$ encodes the transition relation from the "0" copy to the "1" copy.
