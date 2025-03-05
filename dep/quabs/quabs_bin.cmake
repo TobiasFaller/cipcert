@@ -7,4 +7,4 @@ ExternalProject_Add(
   UPDATE_COMMAND ""
   PATCH_COMMAND git apply --reverse ${patch} || true
   COMMAND git apply ${patch}
-  INSTALL_COMMAND cp quabs qaiger2qcir ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+  INSTALL_COMMAND cp quabs qaiger2qcir ${CMAKE_CURRENT_BINARY_DIR})

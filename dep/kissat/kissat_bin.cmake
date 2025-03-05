@@ -7,5 +7,5 @@ ExternalProject_Add(
   UPDATE_COMMAND ""
   CONFIGURE_COMMAND ./configure
   BUILD_COMMAND make -j
-  INSTALL_COMMAND cp build/kissat ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+  INSTALL_COMMAND cp build/kissat ${CMAKE_CURRENT_BINARY_DIR}
 )

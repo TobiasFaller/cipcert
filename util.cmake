@@ -10,7 +10,7 @@ function(add_scripts)
   foreach(file IN LISTS ARGN)
     configure_file(
       ${CMAKE_CURRENT_LIST_DIR}/scripts/${file}.in
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${file}
+      ${CMAKE_CURRENT_BINARY_DIR}/${file}
       @ONLY
       FILE_PERMISSIONS
       OWNER_READ
@@ -21,6 +21,7 @@ function(add_scripts)
       GROUP_EXECUTE
       WORLD_READ
       WORLD_EXECUTE)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${file} TYPE BIN)
   endforeach()
 endfunction()
 
