@@ -8,7 +8,7 @@ done
 echo $(basename "$0"): model   "$1"
 echo $(basename "$0"): witness "$2"
 
-if "$dimsim" -c "$1" "$2" 2> /dev/null; then
+if "$dimsim" "$1" "$2" 2> /dev/null; then
     echo $(basename "$0"): Trace simulation passed
     exit 0
 else
