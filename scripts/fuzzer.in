@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 bin="$(cd -- "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd -P)"
-BUGS="$bin/../bugs"
+BUGS="bugs"
 fuzz="$bin/fuzz"
 certified="$bin/certified"
 status="$bin/status"

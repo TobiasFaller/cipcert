@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 bin="$(cd -- "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd -P)"
-BUGS="$bin/../bugs"
+BUGS="bugs"
 certified="$bin/certified"
 generate="$bin/dimfuzz"
 for i in certified generate; do
@@ -8,15 +8,15 @@ for i in certified generate; do
 done
 "$certified" >/dev/null || exit
 [ $# -lt 1 ] && echo "usage: $(basename "$0") <model checker> [<seed>]" && exit 0
-MC=$(realpath $1)
+MC="$1"
 [ $# -gt 1 ] && seed=$2
 mkdir -p ${TMPDIR:-/tmp}/froleyks-dimcert
-TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-cerbotor/"$(basename "$0")"-XXXXXXXX)
+TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-dimcert/"$(basename "$0")"-XXXXXXXX)
 trap 'rm -rf ${TMP}; exit' EXIT HUP INT QUIT TERM
 
 mod="$TMP"/mod.cir
 rm -f "$mod"
-"$generate" "$seed" > "$mod"
+"$generate" $seed > "$mod"
 "$certified" --mc_time=60 "$MC" "$mod" && exit 0
 res=$?
 seed=$(grep seed "$mod" | awk '{print $3}')
