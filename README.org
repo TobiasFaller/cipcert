@@ -7,8 +7,8 @@
 git clone https://github.com/Froleyks/dimcert
 cd dimcert
 cmake -DCMAKE_BUILD_TYPE=Release -DTOOLS=ON -B build
-make -j$(nproc) -C build
-./build/bin/check examples/model.dimspec examples/witness.dimspec
+cmake --build build --parallel
+./build/check examples/model.dimspec examples/witness.dimspec
 #+end_src
 ** Motivation
 Model checking is an essential technique for hardware design.
