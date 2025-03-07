@@ -1,5 +1,5 @@
 * Dimcert
-#+html: <img src="logo.png" width="300px" align="right"/>
+#+html: <img src="logo.webp" width="300px" align="right"/>
 [[https://github.com/Froleyks/dimcert][Dimcert]] checks the correctness of witnesses in the dimspec format.
 
 ** Quickstart
