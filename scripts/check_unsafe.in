@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 bin=$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-dimsim="$bin/dimsim"
-for i in dimsim; do
+cipsim="$bin/cipsim"
+for i in cipsim; do
     [ ! -x "${!i}" ] && echo "$(basename "$0"): missing executable $i (${!i})" >&2 && exit 1
 done
 [ $# -lt 2 ] && echo "usage: $(basename "$0") <model> <unsafe witness>" && exit 0
 echo $(basename "$0"): model   "$1"
 echo $(basename "$0"): witness "$2"
 
-if "$dimsim" "$1" "$2" 2> /dev/null; then
+if "$cipsim" "$1" "$2" 2> /dev/null; then
     echo $(basename "$0"): Trace simulation passed
     exit 0
 else

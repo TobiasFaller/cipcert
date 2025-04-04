@@ -5,11 +5,11 @@ RUN \
   apt-get install -y --no-install-recommends cmake make g++ git zlib1g-dev ca-certificates && \
   apt-get clean
 
-COPY . /dimcert
-WORKDIR /dimcert
+COPY . /cipcert
+WORKDIR /cipcert
 RUN \
   rm -rf build && \
   cmake -DCMAKE_BUILD_TYPE=Release -DTOOLS=ON -B build && \
   make -j$(nproc) -C build
 
-ENTRYPOINT ["/dimcert/build/bin/check"]
+ENTRYPOINT ["/cipcert/build/bin/check"]

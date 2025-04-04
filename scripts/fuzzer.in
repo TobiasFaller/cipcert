@@ -13,11 +13,11 @@ cleanup() {
   echo
   jobs -rp | xargs -r kill
   wait
-  if ls "$BUGS"/bug-*.btor2 2>/dev/null 2>&1; then
+  if ls "$BUGS"/bug-*.cip 2>/dev/null 2>&1; then
     echo -e "\n$(basename "$0"): $(basename $MC) on shortes bug\n"
-    short=$(wc -l "$BUGS"/bug-*.btor2 | sort -n | head -n 1 | awk '{print $2}')
-    model=$(realpath "$bin"/..)/bug.btor2
-    witness=$(realpath "$bin"/..)/witness.btor2
+    short=$(wc -l "$BUGS"/bug-*.cip | sort -n | head -n 1 | awk '{print $2}')
+    model=$(realpath "$bin"/..)/bug.cip
+    witness=$(realpath "$bin"/..)/witness.cip
     rm -f "$model" "$witness"
     cp "$short" "$model"
     "$certified" "$MC" "$model" "$witness"
@@ -34,7 +34,7 @@ trap 'cleanup' EXIT HUP INT QUIT TERM
 MC=$(realpath $1)
 n=${2:-8}
 echo $(basename "$0"): fuzzing $(basename "$MC") with $n thredas
-old_bugs=$(ls "$BUGS"/bug-*.btor2 2>/dev/null | wc -l)
+old_bugs=$(ls "$BUGS"/bug-*.cip 2>/dev/null | wc -l)
 if [ $old_bugs -gt 0 ]; then
   echo $(basename "$0"): "Warning: $old_bugs failure inducing inputs from previous runs found"
   echo $(basename "$0"): run rm -r $(realpath $BUGS)

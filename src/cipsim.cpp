@@ -7,8 +7,8 @@
 #include <ranges>
 #include <vector>
 
-#include "dimspec.hpp"
-#include "dimtrace.hpp"
+#include "cip.hpp"
+#include "ciptrace.hpp"
 
 #ifdef QUIET
 #define MSG \
@@ -30,7 +30,7 @@ auto param(int argc, char *argv[]) {
 }
 
 bool check_clauses(const CNF &cnf, const std::vector<int64_t>& current, const std::vector<int64_t>& next = {}) {
-for (auto const &clause : cnf.clauses) {
+  for (auto const &clause : cnf.clauses) {
     for (auto const &lit : clause)
       if (std::abs(lit) <= cnf.n) {
         if (std::binary_search(current.begin(), current.end(), lit))
@@ -46,29 +46,27 @@ for (auto const &clause : cnf.clauses) {
   return true;
 }
 
-int check_trace(const Dimspec& model, const Dimtrace& trace) {
+int check_trace(const Cip& model, const Ciptrace& trace) {
   auto const &timeframes { trace.timeframes };
   if (timeframes.size() < 1)
     return 1; // No timeframes
-  if (!check_clauses(model.initial, timeframes[0]))
+  if (!check_clauses(model.init, timeframes[0]))
     return 2; // INIT UNSAT
   for (size_t i { 0u }; i < timeframes.size(); ++i) {
-    if (!check_clauses(model.universal, timeframes[i]))
-      return 3; // UNIVERSAL UNSAT
-    if (check_clauses(model.goal, timeframes[i]))
-      return 0; // GOAL SAT
+    if (check_clauses(model.target, timeframes[i]))
+      return 0; // TARGET SAT
     if (i + 1 < timeframes.size()
-        && !check_clauses(model.transition, timeframes[i], timeframes[i + 1]))
-      return 4; // TRANS UNSAT
+        && !check_clauses(model.trans, timeframes[i], timeframes[i + 1]))
+      return 3; // TRANS UNSAT
   }
-  return 5; // No SAT found
+  return 4; // No SAT found
 }
 
 int main(int argc, char **argv) {
   auto [model_path, trace_path] = param(argc, argv);
   MSG << "Checking Traces for Dimspec\n";
   MSG << VERSION " " GITID "\n";
-  Dimspec model(model_path);
-  Dimtrace trace(trace_path);
+  Cip model(model_path);
+  Ciptrace trace(trace_path);
   return check_trace(model, trace);
 }

@@ -1,14 +1,15 @@
-* Dimcert
-#+html: <img src="logo.webp" width="250px" align="right"/>
-[[https://github.com/Froleyks/dimcert][Dimcert]] checks the correctness of witnesses in the dimspec format.
+* Cipcert
+#+html: <img src="logo.png" width="250px" align="right"/>
+[[https://github.com/TobiasFaller/cipcert][Cipcert]] checks the correctness of witnesses in the CIP format.
+If is a one to one port of the Dimcert utility, adjusted for the CIP format.
 
 ** Quickstart
 #+begin_src sh
-git clone https://github.com/Froleyks/dimcert
-cd dimcert
+git clone https://github.com/TobiasFaller/cipcert
+cd cipcert
 cmake -DCMAKE_BUILD_TYPE=Release -DTOOLS=ON -B build
 cmake --build build --parallel
-./build/check examples/model.dimspec examples/witness.dimspec
+./build/check examples/model.cip examples/witness.cip
 #+end_src
 ** Motivation
 Model checking is an essential technique for hardware design.
@@ -19,60 +20,59 @@ A witness circuit generalizes the concept of an inductive invariant.
 
 Instead of searching for an inductive invariant in the model itself, we find a different circuit -- the witness -- that simulates part of the model and has an inductive invariant.
 ** Witness circuits
-To check if a witness circuit is valid for a given model, Dimcert performs five checks:
-| Reset      | i \wedge u  \Rightarrow  i' \wedge u'              |
-| Transition | t \wedge u0 \wedge u1 \wedge u0'  \Rightarrow  t' \wedge u1' |
-| Property   | (u \wedge u')  \Rightarrow  (g \Rightarrow g')          |
-| Base       | i' \wedge u'  \Rightarrow  -g'                |
-| Step       | -g0' \wedge t' \wedge u0' \wedge u1'  \Rightarrow  -g1' |
-Where $i$ encodes initial states, $u$ is the universal constraint, $g$ is the goal, and $t$ encodes the transition relation from the "0" copy to the "1" copy.
-that that the states of the "1" copy are equal to the nexts of the "0" copy. When $F$ is used the other formulas have a temporal index. {K} means that the formula is limited to $K$, which is the the set of inputs and states shared between model and witness.
+To check if a witness circuit is valid for a given model, Cipcert performs five checks:
+| Reset      | INIT \Rightarrow  INIT'                       |
+| Transition | TRANS \Rightarrow  TRANS'                     |
+| Property   | -TARGET' \Rightarrow  -TARGET                 |
+| Base       | INIT' \Rightarrow  -TARGET'                   |
+| Step       | -TARGET0' \wedge TRANS' \Rightarrow -TARGET1' |
+Where $INIT$ encodes initial states, $TARGET$ is the target, and $TRANS$ encodes the transition relation from the "0" copy to the "1" copy.
+The states of the "1" copy are equal to the nexts of the "0" copy.
 
 If a witness and model pass the first three checks, the witness is said to simulate the model.
 The last two check the inductiveness of the property in the witness circuit.
 
 The validity of these formulas is checked by encoding their negation into QCIR circuits, and checking unsatisfiability with [[https://github.com/ltentrup/quabs][QuAbs]].
 ** Correctness Witness
-Witness circuits are normal DIMSPEC files.
+Witness circuits are normal CIP files.
 
-Both the Reset and Transition checks are defined on the intersection between model and witness $K$.
+Both the Reset and Transition checks are defined on the intersection between model and witness.
 The witness can store an explicit mapping of its inputs and latches to the simulated  in the model in comments.
 Other information may be stored, but comments containing '=' will be interpreted as a mapping.
 #+begin_example
 c 1=1
 c 2=2
 #+end_example
-If no mapping information is found, Dimcert assumes a default.
-Checkout the [[https://github.com/Froleyks/dimcert/blob/main/examples][examples]] directory.
+If no mapping information is found, Cipcert assumes a default.
+Checkout the [[https://github.com/TobiasFaller/cipcert/blob/main/examples][examples]] directory.
 ** Violation Witness
-This repository also includes ~dimsim~, a tool for simulating counterexample traces.
-Traces are represented as a sequence of models and have to start with ~s SATISFIABLE~ in the first line.
+This repository also includes ~cipsim~, a tool for simulating counterexample traces.
+Traces are represented as a sequence of models.
 #+begin_example
-s SATISFIABLE
-v0 -1 2 0
-v1 -1 -2 0
+0 = 01
+1 = 00
 #+end_example
 ** References
-The theory this tool is based on is detailed in our papers.
-Beyond that, we demonstrate how to certify the combination of different preprocessing techniques and model checking algorithms with witness circuits.
+The theory this tool is based on is detailed in Nils Froleyks et. al.'s papers.
+Beyond that,  Nils Froleyks et. al. demonstrate how to certify the combination of different preprocessing techniques and model checking algorithms with witness circuits.
 | Progress in Certifying Hardware Model Checking Results      | Yu, Biere & Heljanko        | CAV21   |
 | Stratified Certification for K-Induction                    | Yu, Froleyks & Biere et al. | FMCAD22 |
 | Towards Compositional Hardware Model Checking Certification | Yu, Froleyks & Biere et al. | FMCAD23 |
 | Certifying Phase Abstraction                                | Froleyks, Yu & Biere et al. | IJCAR24 |
 ** Build
-Dimcert itself depends on make, cmake, a c++ compiler, and git to fetch dependency.
+Cipcert itself depends on make, cmake, a c++ compiler, and git to fetch dependency.
 With cmake -DTOOLS=ON additional tools are build, namely dimfuzz and the QBF solver QuAbs. The latter may come with additional dependencies.
 
-A static dimcert binary can be build with cmake -DSTATIC=ON.
+A static cipcert binary can be build with cmake -DSTATIC=ON.
 
 Checkout the Dockerfile for more details or directly run the container:
 
 #+begin_src sh
-docker build -t dimcert .
-docker run --rm dimcert examples/model.dimspec examples/witness.dimspec
+docker build -t cipcert .
+docker run --rm cipcert examples/model.cip examples/witness.cip
 #+end_src
 ** Scripts
-In addition to dimcert the TOOLS option builds a number of useful scripts in the build/bin directory:
+In addition to cipcert the TOOLS option builds a number of useful scripts in the build/bin directory:
 - check <model> <witness> :: checks the first line of the witness to decide if it is a violation or correctness witness then runs ~check_unsafe~ or ~check_safe~ accordingly.
 - certified <model checker> <model> :: Runs the model checker and verifies the generated certificate. The model checker is expected to interprets the first argument as the path to the model, the second as the path where a violation is written, and the third as the path where a witness circuit is written.
   Note that the second and third arguments may point to the same file.

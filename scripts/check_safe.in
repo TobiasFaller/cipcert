@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 bin=$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-dimcert="$bin/dimcert"
+cipcert="$bin/cipcert"
 quabs="$bin/quabs"
-for i in dimcert quabs; do
+for i in cipcert quabs; do
     [ ! -x "${!i}" ] && echo "$(basename "$0"): missing executable $i (${!i})" >&2 && exit 1
 done
 [ $# -lt 2 ] && echo "usage: $(basename "$0") <model> <safe witness>" && exit 0
-mkdir -p ${TMPDIR:-/tmp}/froleyks-dimcert
+mkdir -p ${TMPDIR:-/tmp}/froleyks-cipcert
 if [ $# -gt 2 ]; then
     TMP=$(realpath "$bin"/..)
 else
-    TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-dimcert/$(basename "$0")-XXXXXXXX)
+    TMP=$(mktemp -d "${TMPDIR:-/tmp}"/froleyks-cipcert/$(basename "$0")-XXXXXXXX)
     trap 'rm -rf ${TMP}; exit' EXIT HUP INT QUIT TERM
 fi
 echo $(basename "$0"): using temp dir "$TMP"
@@ -21,8 +21,8 @@ for check in "${CHECKS[@]}"; do
 done
 echo $(basename "$0"): model   "$1"
 echo $(basename "$0"): witness "$2"
-"$dimcert" "$1" "$2" "${circuits[@]}" || {
-    echo "$(basename "$0"): Error: dimcert failed" >&2
+"$cipcert" "$1" "$2" "${circuits[@]}" || {
+    echo "$(basename "$0"): Error: cipcert failed" >&2
     exit 1
 }
 
